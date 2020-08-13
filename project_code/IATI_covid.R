@@ -15,9 +15,9 @@ get.query.data <- function(filename=NULL, query_id=NULL, path="project_data", fo
     new.file <- paste0(filename, "_", Sys.Date(), ".csv")
     fwrite(fread(query), paste0(path, "/", new.file))
   }
-  query.data <- fread(paste0(path, "/", new.file), quiet = T)
+  query.data <- fread(paste0(path, "/", new.file))
   old.files <- old.files[old.files != new.file]
-  if(remove.old) file.remove(paste0(path, old.files))
+  if(remove.old & length(old.files) != 0) file.remove(paste0(path, "/", old.files))
   return(query.data)
 }
 
