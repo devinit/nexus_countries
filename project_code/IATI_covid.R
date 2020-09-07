@@ -21,15 +21,14 @@ get.query.data <- function(filename=NULL, query_id=NULL, path="project_data", fo
   return(query.data)
 }
 
-iati.raw <- get.query.data("Nexus_IATI", 638, force.update = F, remove.old = T)
+iati.raw <- get.query.data("Nexus_IATI", 638, force.update = T, remove.old = T)
 
-iati <- iati.raw[`Calculated Default Vocabulary` != ""]
-iati <- iati[`Calculated Transaction Year` >= 2016]
+iati <- iati.raw[`Calculated Transaction Year` >= 2016]
 
 iati$x_transaction_month_year <- format(as.Date(iati$`Calculated Transaction Date`), "%Y-%m")
 iati$x_covid_corrected <- ifelse(as.Date(iati$`Calculated Transaction Date`) < as.Date("2020-03-01"), FALSE, iati$`X Covid flag`)
 
-iati$humanitarian_corrected <- ifelse(iati$Humanitarian == "true" | iati$Humanitarian == "1", "humanitarian", "development")
+iati$humanitarian_corrected <- ifelse(iati$Humanitarian == "true" | iati$Humanitarian == "1" | iati$`Transaction Humanitarian` == 1 | iati$`DI Sector Name` == "Humanitarian", "humanitarian", "development")
 
 iati <- iati[as.Date(`Calculated Transaction Date`) < as.Date("2020-8-1")]
 
