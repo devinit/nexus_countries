@@ -31,6 +31,16 @@ iati$x_covid_corrected <- ifelse(as.Date(iati$`Calculated Transaction Date`) < a
 iati$humanitarian_corrected <- ifelse(iati$Humanitarian == "true" | iati$Humanitarian == "1" | iati$`Transaction Humanitarian` == 1 | iati$`DI Sector Name` == "Humanitarian", "humanitarian", "development")
 
 iati <- iati[as.Date(`Calculated Transaction Date`) < as.Date("2020-8-1")]
+iati.finance.codes <- fread("https://iatistandard.org/reference_downloads/203/codelists/downloads/clv3/csv/en/FinanceType.csv")[, c("code", "category")]
+iati.finance.cats <- setnames(fread("https://iatistandard.org/reference_downloads/203/codelists/downloads/clv3/csv/en/FinanceType-category.csv")[, c("code", "name")], c("category", "finance_name"))[]
+iati.finance.codes <- merge(iati.finance.codes, iati.finance.cats)
+
+iati <- merge(iati, iati.finance.codes, by.x = "Calculated Finance Type Code", by.y = "code", all.x = T)
+
+nexus.covid.type <- dcast(as.data.table(iati), Country + x_covid_corrected + finance_name ~ x_transaction_month_year, value.var="Calulated Transaction Value USD", fun.aggregate = function(x) sum(x, na.rm=T))
+nexus.covid.type <- dcast(melt(nexus.covid.type, id.vars = c("Country", "x_covid_corrected", "finance_name")), Country + variable ~ x_covid_corrected + finance_name, value.var="value", fun.aggregate = function(x) sum(x, na.rm=T))
+
+fwrite(nexus.covid.type, "output/covid_trend_types.csv")
 
 nexus.covid <- dcast(as.data.table(iati), Country + x_covid_corrected + humanitarian_corrected ~ x_transaction_month_year, value.var="Calulated Transaction Value USD", fun.aggregate = function(x) sum(x, na.rm=T))
 nexus.covid <- dcast(melt(nexus.covid, id.vars = c("Country", "x_covid_corrected", "humanitarian_corrected")), Country + variable ~ x_covid_corrected + humanitarian_corrected, value.var="value")

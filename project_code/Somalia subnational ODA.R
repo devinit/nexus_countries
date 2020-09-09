@@ -18,7 +18,6 @@ aims.melt[, (disb.cols) := (as.numeric(value)/as.numeric(`Exchange rate`)*data.t
 aims.melt <- melt(aims.melt, id.vars = c("region", flag.cols))
 aims.melt <- aims.melt[value > 0, .(value = sum(value)), by = c("region", "variable", flag.cols)][, c("type", "year") := tstrsplit(gsub(" disbursements", "", variable), " FY ")][, variable := NULL]
 
-aims.cast <- dcast(aims.melt[, .(value = sum(value)), by = .(region, year)], region ~ year)
+aims.cast <- dcast(aims.melt[, .(value = sum(value)), by = .(region, year, HUMANITARIAN)], region + HUMANITARIAN ~ year)
 fwrite(aims.cast, "output/region_oda.csv")
 aims.cast.covid <- dcast(aims.melt[`COVID-19` %in% c("Targeted", "Relevant"), .(value = sum(value)), by = .(region, year)], region ~ year)
-aims.cast.humanitarian <- dcast(aims.melt[HUMANITARIAN == "Yes", .(value = sum(value)), by = .(region, year)], region ~ year)
